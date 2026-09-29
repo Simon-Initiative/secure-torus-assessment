@@ -1,0 +1,9 @@
+{
+    "moodle-availability_torusseb-form": {
+        "requires": [
+            "base",
+            "node",
+            "moodle-core_availability-form"
+        ]
+    }
+}

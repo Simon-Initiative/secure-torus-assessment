@@ -1,0 +1,10 @@
+{
+    "name": "moodle-availability_torusseb-form",
+    "builds": {
+        "moodle-availability_torusseb-form": {
+            "jsfiles": [
+                "form.js"
+            ]
+        }
+    }
+}

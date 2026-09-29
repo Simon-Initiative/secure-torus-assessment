@@ -1,0 +1,102 @@
+name: moodle-local
+
+x-moodle: &moodle
+  build: .
+  image: secure-assessment-moodle:dev
+  environment:
+    MOODLE_DB_HOST: db
+    MOODLE_DB_NAME: moodle
+    MOODLE_DB_USER: moodle
+    MOODLE_DB_PASSWORD: ${MOODLE_DB_PASSWORD:-moodle-local}
+    MOODLE_HTTPS_PORT: ${MOODLE_HTTPS_PORT:-8443}
+    MOODLE_WWWROOT: https://moodle.test:${MOODLE_HTTPS_PORT:-8443}
+    MOODLE_ADMIN_USER: ${MOODLE_ADMIN_USER:-admin}
+    MOODLE_ADMIN_PASSWORD: ${MOODLE_ADMIN_PASSWORD:-LocalMoodle123!}
+    MOODLE_ADMIN_EMAIL: ${MOODLE_ADMIN_EMAIL:-admin@example.com}
+    MOODLE_CERT_DIR: /etc/moodle/tls
+  volumes:
+    - ../moodle:/var/www/html
+    - .:/var/www/secure-assessment-plugin:ro
+    - ./docker:/var/www/html/docker:ro
+    - vendor:/var/www/html/vendor
+    - moodledata:/var/www/moodledata
+    - ./docker/certs:/etc/moodle/tls:ro
+  extra_hosts:
+    - 'torus.test:host-gateway'
+
+services:
+  bootstrap:
+    build: .
+    image: secure-assessment-moodle:dev
+    command: [bootstrap]
+    environment:
+      MOODLE_SOURCE_REF: ${MOODLE_SOURCE_REF:-8eae8fc94d0e3932cbc64f1e81414903a1e2e83b}
+      MOODLE_SOURCE_URL: ${MOODLE_SOURCE_URL:-https://github.com/moodle/moodle.git}
+    volumes:
+      - ..:/workspace
+    restart: 'no'
+
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: moodle
+      POSTGRES_USER: moodle
+      POSTGRES_PASSWORD: ${MOODLE_DB_PASSWORD:-moodle-local}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U moodle -d moodle']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  init:
+    <<: *moodle
+    command: [init]
+    volumes:
+      - ../moodle:/var/www/html
+      - .:/var/www/secure-assessment-plugin:ro
+      - ./docker:/var/www/html/docker:ro
+      - vendor:/var/www/html/vendor
+      - moodledata:/var/www/moodledata
+      - ./docker/certs:/etc/moodle/tls
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    restart: 'no'
+
+  web:
+    <<: *moodle
+    ports:
+      - '127.0.0.1:${MOODLE_HTTP_PORT:-8088}:80'
+      - '127.0.0.1:${MOODLE_HTTPS_PORT:-8443}:${MOODLE_HTTPS_PORT:-8443}'
+    networks:
+      default:
+        aliases:
+          - moodle.test
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD-SHELL, 'curl --fail --silent "$${MOODLE_WWWROOT}/login/index.php" > /dev/null']
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  cron:
+    <<: *moodle
+    command: [cron]
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres:
+  moodledata:
+  vendor:
