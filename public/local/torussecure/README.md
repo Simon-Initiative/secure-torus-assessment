@@ -7,6 +7,12 @@ Install all three components together:
 - `availability_torusseb`: serialized `{"type":"torusseb"}` restriction and its editor integration.
 - `ltisource_torussecure`: callback before LTI launch signing.
 
+## Lifecycle support
+
+Version `2026102100` adds backup/restore, copy/import, recycle-bin recovery and deletion
+cleanup. See [lifecycle operations, upgrade, recovery and verification](LIFECYCLE.md).
+Existing launch verification and stored configurations are preserved.
+
 ## Modern SEB verification
 
 The `.seb` start URL is now `/local/torussecure/launch.php?cmid=<cmid>`. This page first

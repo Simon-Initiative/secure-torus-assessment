@@ -63,3 +63,12 @@ The macOS callback regression models the native bridge's `callback.name` message
 `name();` evaluation, rather than directly invoking the JavaScript function object. An anonymous
 callback reproduced the real client's `Unexpected token ')'` failure; the named global callback
 passes. The same check was also run against the JavaScript served by Moodle's asset endpoint.
+
+## Lifecycle regression coverage
+
+`lifecycle_test.php`, `restore_policy_test.php` and `lifecycle_cleanup_test.php`
+exercise backup/restore controllers, archive extraction, duplication/import, asynchronous
+course copy, course/activity recycle bins, deletion tasks, configuration regeneration,
+policy rejection, ownership migration and dry-run-first cleanup. They belong to the
+`lifecycle` PHPUnit group. See [the lifecycle guide](../LIFECYCLE.md) for recovery and
+manual SEB/grade-passback release checks. Existing test files were not changed.
