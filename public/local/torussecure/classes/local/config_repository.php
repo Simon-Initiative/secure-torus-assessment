@@ -74,6 +74,7 @@ class config_repository {
             $record = (object) [
                 'cmid' => $cmid,
                 'ltiinstanceid' => $ltiinstanceid,
+                'courseid' => $DB->get_field('course_modules', 'course', ['id' => $cmid], MUST_EXIST),
                 'enabled' => 1,
                 'configxml' => $xml,
                 'configkey' => $configkey,

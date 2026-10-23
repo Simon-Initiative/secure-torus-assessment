@@ -25,10 +25,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_torussecure';
-$plugin->version = 2026092500;
+$plugin->version = 2026102100;
 $plugin->requires = 2026090300;
 $plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.1.0-step4';
+$plugin->release = '0.2.0-lifecycle';
 $plugin->dependencies = [
     'mod_lti' => 2026042000,
     'quizaccess_seb' => 2026042002, // Spike-only Config Key adapter dependency.
